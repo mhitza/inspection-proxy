@@ -1,9 +1,11 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Main where
 
 
     import System.Environment (getArgs)
     import Control.Proxy.TCP
     import Control.Proxy
+    import System.Console.CmdArgs
 
     import qualified Control.Concurrent.Async as Async
     import qualified Data.ByteString.Char8 as B
