@@ -7,7 +7,7 @@ module Main where
     import Control.Monad 
     import Control.Proxy
 
-    import Control.Concurrent.MVar
+    import qualified Control.Concurrent.Async as Async
     import qualified Data.ByteString.Char8 as B
 
 
@@ -20,19 +20,10 @@ module Main where
 
     main :: IO ()
     main = do
-        m' <- newEmptyMVar
         (host:port:bindport:_) <- getArgs
         serve HostAny bindport $ \(bindSocket, _) -> do
             connect host port $ \(serviceSocket, _) -> do
-                c1 <- newEmptyMVar
-                c2 <- newEmptyMVar
-                forkIO $ do
-                    runProxy $ socketReadS 4096 bindSocket >-> readDispose >-> socketWriteD serviceSocket 
-                    putMVar c1 True
-                forkIO $ do
-                    runProxy $ socketReadS 4096 serviceSocket >-> readDispose >-> socketWriteD bindSocket 
-                    putMVar c2 True
-                takeMVar c1
-                return ()
-        takeMVar m'
+                a1 <- Async.async $ do runProxy $ socketReadS 4096 bindSocket >-> readDispose >-> socketWriteD serviceSocket 
+                runProxy $ socketReadS 4096 serviceSocket >-> readDispose >-> socketWriteD bindSocket 
+                Async.wait a1
         return ()

@@ -18,4 +18,4 @@ executable inspection-proxy
   main-is:             Main.hs
   ghc-options:         -threaded -O3
   -- other-modules:       
-  build-depends:       base >=4.5, pipes-network >=0.2, pipes >=3.2, bytestring >=0.9
+  build-depends:       base >=4.5, pipes-network >=0.2, pipes >=3.2, bytestring >=0.9, async >=2.0
