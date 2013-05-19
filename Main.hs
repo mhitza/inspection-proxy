@@ -3,8 +3,6 @@ module Main where
 
     import System.Environment (getArgs)
     import Control.Proxy.TCP
-    import Control.Concurrent
-    import Control.Monad 
     import Control.Proxy
 
     import qualified Control.Concurrent.Async as Async
