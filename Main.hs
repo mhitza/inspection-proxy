@@ -21,9 +21,9 @@ module Main where
     main :: IO ()
     main = do
         (host:port:bindport:_) <- getArgs
-        serve HostAny bindport $ \(bindSocket, _) -> do
+        serve HostAny bindport $ \(bindSocket, _) -> 
             connect host port $ \(serviceSocket, _) -> do
-                a1 <- Async.async $ do runProxy $ socketReadS 4096 bindSocket >-> readDispose >-> socketWriteD serviceSocket 
+                a1 <- Async.async $ runProxy $ socketReadS 4096 bindSocket >-> readDispose >-> socketWriteD serviceSocket 
                 runProxy $ socketReadS 4096 serviceSocket >-> readDispose >-> socketWriteD bindSocket 
                 Async.wait a1
         return ()
