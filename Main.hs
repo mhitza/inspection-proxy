@@ -9,11 +9,15 @@ module Main where
     import qualified Data.ByteString.Char8 as B
 
 
+    readDispose :: Proxy p => () -> p () B.ByteString b' B.ByteString IO r
     readDispose () = runIdentityP $ forever $ do
         readValue <- request ()
         lift $ B.putStrLn readValue
-        respond readValue
-        return ()
+        respond readValue >> return ()
+
+
+    async_ :: IO a -> IO ()
+    async_ f = Async.async f >> return ()
 
 
     main :: IO ()
@@ -21,7 +25,6 @@ module Main where
         (host:port:bindport:_) <- getArgs
         serve HostAny bindport $ \(bindSocket, _) -> 
             connect host port $ \(serviceSocket, _) -> do
-                a1 <- Async.async $ runProxy $ socketReadS 4096 bindSocket >-> readDispose >-> socketWriteD serviceSocket 
+                async_ $ runProxy $ socketReadS 4096 bindSocket >-> readDispose >-> socketWriteD serviceSocket 
                 runProxy $ socketReadS 4096 serviceSocket >-> readDispose >-> socketWriteD bindSocket 
-                Async.wait a1
         return ()
