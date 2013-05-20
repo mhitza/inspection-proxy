@@ -5,7 +5,7 @@ module Main where
     import Control.Proxy
     import System.Console.CmdArgs.Explicit
 
-    import Control.Monad (void, when)
+    import Control.Monad (void, unless)
     import Data.Maybe (isNothing)
     import qualified Control.Concurrent.Async as Async
     import qualified Data.ByteString.Char8 as B
@@ -22,13 +22,13 @@ module Main where
     proxyDetails :: [(String, t)] -> Maybe (t, t, t)
     proxyDetails as = readProxyDetails $ filter (\(a,_) -> a == "proxy-setup") as where
         readProxyDetails as' | length as' /= 3 = Nothing
-                             | otherwise       = Just (snd $ as' !! 2, snd $ as' !! 1, snd $ as' !! 0)  -- arguments are parsed in reverse order
+                             | otherwise       = Just (snd $ as' !! 2, snd $ as' !! 1, snd $ head as')  -- arguments are parsed in reverse order
 
 
     printPass :: Proxy p => Bool -> () -> p () B.ByteString b' B.ByteString IO r
     printPass skip () = runIdentityP $ forever $ do
         readValue <- request ()
-        when (not skip) $ lift $ B.putStrLn readValue
+        unless skip $ lift $ B.putStrLn readValue
         void $ respond readValue
 
 
@@ -36,12 +36,11 @@ module Main where
     main = do
         args <- processArgs arguments 
         let connectionDetails = proxyDetails args
-        if (elem ("help","") args || isNothing connectionDetails)
+        let hasFlag flag      = (flag, "") `elem` args
+        if hasFlag "help" || isNothing connectionDetails
             then print $ helpText [] HelpFormatDefault arguments
             else do
                 let Just (bindport, host, port) = connectionDetails
-                let hasFlag flag                = elem (flag, "") args
-
                 serve HostAny bindport $ \(bindSocket, _) -> 
                     connect host port $ \(serviceSocket, _) -> do
                         void $ Async.async $ runProxy $ socketReadS 4096 bindSocket >-> printPass (hasFlag "only-server") >-> socketWriteD serviceSocket 
