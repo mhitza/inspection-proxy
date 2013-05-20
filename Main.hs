@@ -5,7 +5,7 @@ module Main where
     import Control.Proxy
     import System.Console.CmdArgs.Explicit
 
-    import Control.Monad (void, unless)
+    import Control.Monad (void, unless, when)
     import Data.Maybe (isNothing)
     import qualified Control.Concurrent.Async as Async
     import qualified Data.ByteString.Char8 as B
@@ -38,6 +38,7 @@ module Main where
         args <- processArgs arguments 
         let connectionDetails = proxyDetails args
         let hasFlag flag      = (flag, "") `elem` args
+        when (hasFlag "version") $ putStrLn "inspection-proxy version 0.1.0.0"
         if hasFlag "help" || isNothing connectionDetails
             then print $ helpText [] HelpFormatDefault arguments
             else do
