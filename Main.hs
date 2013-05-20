@@ -12,6 +12,15 @@ module Main where
     import qualified Data.ByteString.Char8 as B
 
 
+    data Configuration = Configuration
+                         { onlyClient :: Bool
+                         , onlyServer :: Bool
+                         } deriving (Show, Data, Typeable)
+
+
+    defaultConfiguration = Configuration { onlyServer = True, onlyClient = False }
+
+
     readDispose :: Proxy p => () -> p () B.ByteString b' B.ByteString IO r
     readDispose () = runIdentityP $ forever $ do
         readValue <- request ()
@@ -21,6 +30,8 @@ module Main where
 
     main :: IO ()
     main = do
+        conf <- cmdArgs defaultConfiguration
+        print conf
         (host:port:bindport:_) <- getArgs
         serve HostAny bindport $ \(bindSocket, _) -> 
             connect host port $ \(serviceSocket, _) -> do
