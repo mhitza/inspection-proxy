@@ -10,6 +10,7 @@ module Main where
     import qualified Control.Concurrent.Async as Async
     import qualified Data.ByteString.Char8 as B
 
+
     arguments :: Mode [(String,String)]
     arguments = mode "inspection-proxy" [] "" (flagArg (upd "proxy-setup") "proxy-port server port")
         [ flagNone ["only-server"] (("only-server",""):) "print only server response activity"
