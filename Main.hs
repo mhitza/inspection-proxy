@@ -5,7 +5,7 @@ module Main where
     import Control.Proxy
     import System.Console.CmdArgs.Explicit
 
-    import Control.Monad (void)
+    import Control.Monad (void, when)
     import Data.Maybe (isNothing)
     import qualified Control.Concurrent.Async as Async
     import qualified Data.ByteString.Char8 as B
@@ -25,10 +25,10 @@ module Main where
                              | otherwise       = Just (snd $ as' !! 2, snd $ as' !! 1, snd $ as' !! 0)  -- arguments are parsed in reverse order
 
 
-    readDispose :: Proxy p => () -> p () B.ByteString b' B.ByteString IO r
-    readDispose () = runIdentityP $ forever $ do
+    printPass :: Proxy p => Bool -> () -> p () B.ByteString b' B.ByteString IO r
+    printPass skip () = runIdentityP $ forever $ do
         readValue <- request ()
-        lift $ B.putStrLn readValue
+        when (not skip) $ lift $ B.putStrLn readValue
         void $ respond readValue
 
 
@@ -40,8 +40,10 @@ module Main where
             then print $ helpText [] HelpFormatDefault arguments
             else do
                 let Just (bindport, host, port) = connectionDetails
+                let hasFlag flag                = elem (flag, "") args
+
                 serve HostAny bindport $ \(bindSocket, _) -> 
                     connect host port $ \(serviceSocket, _) -> do
-                        void $ Async.async $ runProxy $ socketReadS 4096 bindSocket >-> readDispose >-> socketWriteD serviceSocket 
-                        runProxy $ socketReadS 4096 serviceSocket >-> readDispose >-> socketWriteD bindSocket 
+                        void $ Async.async $ runProxy $ socketReadS 4096 bindSocket >-> printPass (hasFlag "only-server") >-> socketWriteD serviceSocket 
+                        runProxy $ socketReadS 4096 serviceSocket >-> printPass (hasFlag "only-client") >-> socketWriteD bindSocket 
                 return ()
