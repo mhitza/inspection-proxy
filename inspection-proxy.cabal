@@ -5,7 +5,7 @@ name:                inspection-proxy
 version:             0.1.0.0
 synopsis:            A simple proxy for debugging plaintext protocols communication
 -- description:         
-license:             Apache-2.0
+license:             OtherLicense
 license-file:        LICENSE
 author:              Marius Ghita
 maintainer:          mhitza@gmail.com
