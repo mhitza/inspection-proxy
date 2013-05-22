@@ -7,7 +7,7 @@ module Main where
 
     import Control.Monad (void, unless, when)
     import Data.Maybe (isNothing)
-    import qualified Control.Concurrent.Async as Async
+    import Control.Concurrent.Async (async)
     import qualified Data.ByteString.Char8 as B
 
 
@@ -45,6 +45,6 @@ module Main where
                 let Just (bindport, host, port) = connectionDetails
                 serve HostAny bindport $ \(bindSocket, _) -> 
                     connect host port $ \(serviceSocket, _) -> do
-                        void $ Async.async $ runProxy $ socketReadS 4096 bindSocket >-> printPass (hasFlag "only-server") >-> socketWriteD serviceSocket 
+                        void $ async $ runProxy $ socketReadS 4096 bindSocket >-> printPass (hasFlag "only-server") >-> socketWriteD serviceSocket 
                         runProxy $ socketReadS 4096 serviceSocket >-> printPass (hasFlag "only-client") >-> socketWriteD bindSocket 
                 return ()
