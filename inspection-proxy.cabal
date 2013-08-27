@@ -23,3 +23,8 @@ executable inspection-proxy
   ghc-options:         -Wall -threaded -O3
   -- other-modules:       
   build-depends:       base ==4.*, pipes-network, pipes, bytestring, async, cmdargs
+
+executable json-print
+  main-is:             JsonPrint.hs
+  ghc-options:         -Wall
+  build-depends:       base ==4.*, json-fu, bytestring
