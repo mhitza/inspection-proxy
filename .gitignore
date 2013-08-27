@@ -1,2 +1,4 @@
 .hsenv/
 /dist/
+*.hi
+*.o
