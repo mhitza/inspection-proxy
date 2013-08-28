@@ -27,4 +27,4 @@ executable inspection-proxy
 executable json-print
   main-is:             JsonPrint.hs
   ghc-options:         -Wall
-  build-depends:       base ==4.*, json-fu, bytestring
+  build-depends:       base ==4.*, json-fu, bytestring, vector, unordered-containers, aeson
