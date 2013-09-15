@@ -1,14 +1,13 @@
 module Main where
 
 
-    import Control.Proxy.TCP
-    import Control.Proxy
-    import System.Console.CmdArgs.Explicit
-
-    import Control.Monad (void, unless, when)
+    import Control.Monad (void, unless, when, forever)
     import Data.Maybe (isNothing)
     import Control.Concurrent.Async (async)
     import qualified Data.ByteString.Char8 as B
+    import Pipes
+    import Pipes.Network.TCP
+    import System.Console.CmdArgs.Explicit
 
 
     arguments :: Mode [(String,String)]
@@ -26,11 +25,11 @@ module Main where
                              | otherwise       = Just (snd $ as' !! 2, snd $ as' !! 1, snd $ head as')  -- arguments are parsed in reverse order
 
 
-    printPass :: Proxy p => Bool -> () -> p () B.ByteString b' B.ByteString IO r
-    printPass skip () = runIdentityP $ forever $ do
-        readValue <- request ()
+    printPass :: Bool -> Pipe B.ByteString B.ByteString IO r
+    printPass skip = forever $ do
+        readValue <- await
         unless skip $ lift $ B.putStrLn readValue
-        void $ respond readValue
+        yield readValue
 
 
     main :: IO ()
@@ -45,6 +44,6 @@ module Main where
                 let Just (bindport, host, port) = connectionDetails
                 serve HostAny bindport $ \(bindSocket, _) -> 
                     connect host port $ \(serviceSocket, _) -> do
-                        void $ async $ runProxy $ socketReadS 4096 bindSocket >-> printPass (hasFlag "only-server") >-> socketWriteD serviceSocket 
-                        runProxy $ socketReadS 4096 serviceSocket >-> printPass (hasFlag "only-client") >-> socketWriteD bindSocket 
+                        void $ async $ runEffect $ fromSocket bindSocket 4096 >-> printPass (hasFlag "only-server") >-> toSocket serviceSocket 
+                        runEffect $ fromSocket serviceSocket 4096 >-> printPass (hasFlag "only-client") >-> toSocket bindSocket 
                 return ()
