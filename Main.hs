@@ -37,7 +37,7 @@ module Main where
         args <- processArgs arguments 
         let connectionDetails = proxyDetails args
         let hasFlag flag      = (flag, "") `elem` args
-        when (hasFlag "version") $ putStrLn "inspection-proxy version 0.1.0.0"
+        when (hasFlag "version") $ putStrLn "inspection-proxy version 0.1.0.2"
         if hasFlag "help" || isNothing connectionDetails
             then print $ helpText [] HelpFormatDefault arguments
             else do
