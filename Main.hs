@@ -42,7 +42,7 @@ module Main where
             then print $ helpText [] HelpFormatDefault arguments
             else do
                 let Just (bindport, host, port) = connectionDetails
-                serve HostAny bindport $ \(bindSocket, _) -> 
+                void . serve HostAny bindport $ \(bindSocket, _) -> 
                     connect host port $ \(serviceSocket, _) -> do
                         void $ async $ runEffect $ fromSocket bindSocket 4096 >-> printPass (hasFlag "only-server") >-> toSocket serviceSocket 
                         runEffect $ fromSocket serviceSocket 4096 >-> printPass (hasFlag "only-client") >-> toSocket bindSocket 
